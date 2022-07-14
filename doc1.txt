@@ -1,6 +1,0 @@
-Hello
-Antoine
-42
-pipex
-test
-doc

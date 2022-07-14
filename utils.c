@@ -6,114 +6,59 @@
 /*   By: anrechai <anrechai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/01 16:48:43 by anrechai          #+#    #+#             */
-/*   Updated: 2022/06/01 16:49:35 by anrechai         ###   ########.fr       */
+/*   Updated: 2022/06/15 21:19:08 by anrechai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-char	*ft_strnstr(const char *big, const char *little, size_t len)
+int	ft_strlen(char *str)
 {
-	size_t	i;
-	size_t	j;
-
-	i = 0;
-	if (*little == '\0' || little == NULL)
-		return ((char *)big);
-	while (big[i] && i < len)
-	{
-		j = 0;
-		while (little[j] == big[i + j] && i + j < len)
-		{
-			if (little[j + 1] == '\0')
-				return ((char *)big + i);
-			j++;
-		}
-		i++;
-	}
-	return (NULL);
-}
-
-static int	ft_count_words(char const *s, char c)
-{
-	int	count;
-	int	i;
-
-	count = 0;
-	i = 0;
-	while (s[i])
-	{
-		while (s[i] && s[i] == c)
-			i++;
-		if (s[i] && s[i] != c)
-			count++;
-		while (s[i] && s[i] != c)
-			i++;
-	}
-	return (count);
-}
-
-static int	ft_str_len(char const *s, char c)
-{
-	int	len;
 	int	i;
 
 	i = 0;
-	len = 0;
-	while (s[i] == c)
+	while (str[i])
 		i++;
-	while (s[i] && s[i] != c)
-	{
-		i++;
-		len++;
-	}
-	return (len);
+	return (i);
 }
 
-static char	*fill_tab(char *tab, char const *s, char c, int *k)
+void	free_str(char **s)
 {
-	int	j;
+	int	i;
 
-	j = 0;
-	while (s[(*k)] && s[(*k)] == c)
-		(*k)++;
-	while (s[(*k)] && s[(*k)] != c)
-		tab[j++] = s[(*k)++];
-	tab[j] = '\0';
-	return (tab);
-}
-
-static char	**str_del(char **tab, int i)
-{
-	int	j;
-
-	j = 0;
-	while (j < i)
-		free(tab[j]);
-	return (NULL);
-}
-
-char	**ft_split(char const *s, char c)
-{
-	char	**tab;
-	int		i;
-	int		k;
-
-	if (!s)
-		return (NULL);
-	tab = malloc(sizeof(char *) * (ft_count_words(s, c) + 1));
-	if (!tab)
-		return (NULL);
 	i = 0;
-	k = 0;
-	while (i < ft_count_words(s, c))
+	while (s && s[i])
 	{
-		tab[i] = malloc(sizeof(char) * (ft_str_len(s + k, c) + 1));
-		if (!tab[i])
-			return (str_del(tab, i));
-		tab[i] = fill_tab(tab[i], s, c, &k);
+		free(s[i]);
 		i++;
 	}
-	tab[i] = NULL;
-	return (tab);
+	free(s);
+}
+
+void	get_cmd(t_pipex *pipex, char **argv)
+{
+	pipex->cmd_1 = ft_split(argv[2], ' ');
+	pipex->cmd_2 = ft_split(argv[3], ' ');
+}
+
+void	dup_andclose(int fd_close2, int old_fd, int fd_close, int second_old_fd)
+{
+	if (fd_close2 != -1)
+		close(fd_close2);
+	if (fd_close != -1)
+		close(fd_close);
+	dup2(old_fd, 0);
+	if (old_fd != -1)
+		close(old_fd);
+	dup2(second_old_fd, 1);
+	if (second_old_fd != -1)
+		close(second_old_fd);
+}
+
+void	ft_clean(t_pipex *pipex)
+{
+	free_str(pipex->cmd_1);
+	free_str(pipex->cmd_2);
+	free_str(pipex->path);
+	free(pipex);
 }
